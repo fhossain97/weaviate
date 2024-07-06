@@ -20,6 +20,10 @@ To run application:
 
 `npm run dev`
 
+## Loom Demo Vido
+
+Please note that the recording for the app via the application was causing issues. I recorded the video on [Loom](https://www.loom.com/share/1d70381054a8450f8ccf29c80d6a1381?sid=47be35b2-9c9c-4edd-bc1c-d0d00183378b).
+
 ## Environment Variables
 
 This repository requires the following environment variables to be set in a `.env` file:
