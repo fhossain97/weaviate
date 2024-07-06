@@ -1,29 +1,38 @@
-# Create T3 App
+# DogFinder
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+DogFinder is an application inspired by [QuoteFinder](https://quotefinder.weaviate.io/), allowing users to search for information on their favorite dog breeds using keywords.
 
-## What's next? How do I make an app with this?
+## Notes on Search
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+To search for dog breeds, please use the following keywords:
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+- Border
+- Collie
+- German
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+## Installation / Run Application
 
-## Learn More
+To install dependencies, run:
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+`npm install`
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+To run application:
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+`npm run dev`
 
-## How do I deploy this?
+## Environment Variables
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+This repository requires the following environment variables to be set in a `.env` file:
+
+- WEAVIATE_INSTANCE_URL="https://farhana-sandbox-7lpuhim1.weaviate.network"
+- WEAVIATE_API_KEY="jbHF7aOH6vSOff08IxENCzdgIAp9Cxa1MZum"
+- OPENAI_API_KEY="sk-proj-5aEfK9yFIf43WJ03HB1QT3BlbkFJBrUYCVNYDv0hn6hkCaF9"
+- DOGS_API_URL="https://dogapi.dog/api/v2/breeds"
+
+Note: These are test credentials. Replace them with actual credentials for production use.
+
+## Additional Findings
+
+1. **Hybrid Search Issues**: Initially, a hybrid search similar to QuoteFinder was implemented, but it resulted in `ClientError` despite specifying the vectorizer in the schema. For more details, refer to [this support link](https://forum.weaviate.io/t/hybrid-search-giving-errors-about-missing-vectorizer-but-objects-are-vectorized-correctly/20922).
+
+2. **Duplicate Object Retrieval**: After a user searches using keywords, duplicate objects are sometimes returned. This issue has been noted by the Weaviate community and is under investigation.
