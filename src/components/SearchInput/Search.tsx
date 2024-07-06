@@ -1,22 +1,29 @@
 import { Box, Button, TextField } from "@mui/material";
 import { type FormEvent, useState } from "react";
 import { api } from "~/utils/api";
+import Results from "../ResultsTable/Table";
 
 const Search = () => {
   const [inquiry, setInquiry] = useState<string>("");
 
-  const handleSubmit = async (e: FormEvent) => {
+  const search = api.dogs.searchDogs.useMutation({
+    onError: (e) => {
+      throw new Error(`Search unsuccessful: ${JSON.stringify(e)}`);
+    },
+  });
+
+  const handleQuery = (e: FormEvent) => {
     e.preventDefault();
-    const { data: searchResults, isLoading: loading } =
-      api.dogs.searchDogs.useQuery({
-        text: inquiry,
-      });
-    return loading ? undefined : searchResults;
+
+    search.mutate({ text: inquiry });
+    if (!search) {
+      <Box> Loading Data... </Box>;
+    }
   };
 
   return (
-    <Box className="flex w-full flex-row items-center">
-      <form onSubmit={handleSubmit} className="flex w-full items-center">
+    <Box className="flex w-full flex-col items-center">
+      <form onSubmit={handleQuery} className="flex w-full items-center">
         <TextField
           id="standard-basic"
           label="Type in name of dog breed here."
@@ -29,6 +36,12 @@ const Search = () => {
           Search
         </Button>
       </form>
+      <Box className={`mt-4`}>
+        {" "}
+        {search?.data?.data ? (
+          <Results data={search.data?.data.Get.Dog} />
+        ) : undefined}
+      </Box>
     </Box>
   );
 };

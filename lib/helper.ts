@@ -1,93 +1,81 @@
-import weaviate, { type WeaviateClient } from "weaviate-client";
-import { vectorizer, generative } from "weaviate-client";
+import weaviate, {
+  type WeaviateClient,
+  type ObjectsBatcher,
+  ApiKey,
+} from "weaviate-ts-client";
 import { type DOG_BREEDS_API } from "./types";
 
-export const client: WeaviateClient = await weaviate.connectToWeaviateCloud(
-  String(process.env.WEAVIATE_INSTANCE_URL),
-  {
-    authCredentials: new weaviate.ApiKey(String(process.env.WEAVIATE_API_KEY)),
-    headers: {
-      "X-OpenAI-Api-Key": String(process.env.OPENAI_API_KEY),
-    },
+export const client: WeaviateClient = weaviate.client({
+  scheme: "https",
+  host: String(process.env.WEAVIATE_INSTANCE_URL),
+  apiKey: new ApiKey(String(process.env.WEAVIATE_API_KEY)),
+  headers: {
+    "X-OpenAI-Api-Key": String(process.env.OPENAI_API_KEY),
   },
-);
+});
 
 export async function createCollection(collectionName: string) {
-  const collection = await client.collections.create({
-    name: collectionName,
+  const classObj = {
+    class: collectionName,
     properties: [
-      { name: "idOfBreed", dataType: "text" },
-      { name: "type", dataType: "text" },
       {
-        name: "attributes",
+        dataType: ["text"],
+        name: "name",
+        indexFilterable: true,
+        indexSearchable: true,
+      },
+      {
+        dataType: ["text"],
+        name: "description",
+        indexFilterable: true,
+        indexSearchable: true,
+      },
+      {
+        name: "life_span",
         dataType: "object",
         nestedProperties: [
-          { dataType: "text", name: "name" },
-          { dataType: "text", name: "description" },
-          {
-            name: "life",
-            dataType: "object",
-            nestedProperties: [
-              { name: "max", dataType: "number" },
-              { name: "min", dataType: "number" },
-            ],
-          },
-          {
-            name: "male_weight",
-            dataType: "object",
-            nestedProperties: [
-              { name: "max", dataType: "number" },
-              { name: "min", dataType: "number" },
-            ],
-          },
-          {
-            name: "female_weight",
-            dataType: "object",
-            nestedProperties: [
-              { name: "max", dataType: "number" },
-              { name: "min", dataType: "number" },
-            ],
-          },
-          {
-            name: "hypoallergenic",
-            dataType: "boolean",
-          },
+          { name: "max", dataType: ["int"] },
+          { name: "min", dataType: ["int"] },
         ],
       },
       {
-        name: "relationships",
+        name: "male_weight",
         dataType: "object",
         nestedProperties: [
-          {
-            name: "group",
-            dataType: "object",
-            nestedProperties: [
-              {
-                name: "data",
-                dataType: "object",
-                nestedProperties: [
-                  { name: "idOfBreed", dataType: "text" },
-                  { name: "type", dataType: "text" },
-                ],
-              },
-            ],
-          },
+          { name: "max", dataType: ["int"] },
+          { name: "min", dataType: ["int"] },
         ],
+      },
+      {
+        name: "female_weight",
+        dataType: "object",
+        nestedProperties: [
+          { name: "max", dataType: ["int"] },
+          { name: "min", dataType: ["int"] },
+        ],
+      },
+      {
+        name: "hypoallergenic",
+        dataType: ["boolean"],
       },
     ],
-    vectorizers: vectorizer.text2VecOpenAI(),
-    generative: generative.openAI(),
-  });
+    vectorizer: "text2vec-openai",
+    moduleConfig: {
+      "text2vec-openai": { model: "text-embedding-3-large" },
+    },
+  };
+  await client.schema.classCreator().withClass(classObj).do();
 
-  return collection;
+  return;
 }
 
 export async function checkIfCollectionExists(collectionName: string) {
-  const collectionExists = await client.collections.exists(collectionName);
-  if (collectionExists) {
-    return client.collections.get(collectionName);
+  const collectionExists = await client.schema.exists(collectionName);
+  if (!collectionExists) {
+    await createCollection(collectionName);
+    return collectionName;
   } else {
-    return await createCollection(collectionName);
+    return collectionName;
   }
 }
 
@@ -100,59 +88,97 @@ export async function fetchData(url: string) {
   }).then((res) => res.json())) as typeof DOG_BREEDS_API;
 }
 
+export async function formatData() {
+  const url = process.env.DOGS_API_URL;
+  const data: (typeof DOG_BREEDS_API)[] = [];
+  const api = await fetchData(String(url));
+  data.push(api);
+  // let nextPage = true;
+
+  //The API has 29 pages, for this project, I'm only making a call to the first page
+  // while (nextPage) {
+  //   const api = await fetchData(String(url));
+  //   console.log(`Fetching data from API ...`);
+  //   data.push(api);
+  //   url = api.links.next ? String(api.links.next) : undefined;
+  //   if (!api.links.next) {
+  //     console.log(`Data loaded, exiting out of loop...`);
+  //     nextPage = false;
+  //   }
+  // }
+
+  return data
+    .map((d) => {
+      return d.data.map((doc) => {
+        return {
+          name: doc.attributes.name,
+          description: doc.attributes.description,
+          life_span: {
+            max: doc.attributes.life.max,
+            min: doc.attributes.life.min,
+          },
+          male_weight: {
+            max: doc.attributes.male_weight.max,
+            min: doc.attributes.male_weight.min,
+          },
+          female_weight: {
+            max: doc.attributes.female_weight.max,
+            min: doc.attributes.female_weight.min,
+          },
+          hypoallergenic: doc.attributes.hypoallergenic,
+        };
+      });
+    })
+    .flat();
+}
+
 export async function loadData(collectionName: string) {
-  const collection = await checkIfCollectionExists(collectionName);
-  let url = process.env.DOGS_API_URL;
-  let nextPage = true;
-  while (nextPage) {
-    const data = await fetchData(String(url));
-    await collection.data.insertMany(data.data);
-    url = data.links.next ? String(data.links.next) : undefined;
-    if (!url) {
-      nextPage = false;
-      break;
+  const schemaName = await checkIfCollectionExists(collectionName);
+  const formattedData = await formatData();
+
+  let batcher: ObjectsBatcher = client.batch.objectsBatcher();
+  let counter = 0;
+  const batchSize = 100;
+
+  for (const doc of formattedData) {
+    const obj = {
+      class: schemaName,
+      properties: {
+        name: doc.name,
+        description: doc.description,
+        life_span: {
+          max: doc.life_span.max,
+          min: doc.life_span.min,
+        },
+        male_weight: {
+          max: doc.male_weight.max,
+          min: doc.male_weight.min,
+        },
+        female_weight: {
+          max: doc.female_weight.max,
+          min: doc.female_weight.min,
+        },
+        hypoallergenic: doc.hypoallergenic,
+      },
+    };
+    batcher = batcher.withObject(obj);
+    if (counter++ == batchSize) {
+      await batcher.do();
+      counter = 0;
+      batcher = client.batch.objectsBatcher();
     }
   }
-
-  for await (const item of collection.iterator()) {
-    console.log(item, "this is item");
-  }
-  return `Data loaded.`;
+  await batcher.do();
 }
 
-export async function hybridSearch(collectionName: string, text: string) {
-  const collection = await checkIfCollectionExists(collectionName);
-  return await collection.query.hybrid(text, {
-    limit: 2,
-  });
+export async function keywordSearch(collectionName: string, text: string) {
+  return await client.graphql
+    .get()
+    .withClassName(collectionName)
+    .withBm25({
+      query: text,
+    })
+    .withLimit(5)
+    .withFields("name description hypoallergenic")
+    .do();
 }
-
-// export async function semanticQuery(collectionName: string, text: string) {
-//   const dog = client.collections.get(collectionName);
-//   const result = await dog.query.nearText(text, {
-//     limit: 5,
-//   });
-
-//   for (const object of result.objects) {
-//     console.log(JSON.stringify(object.properties, null, 2));
-//   }
-
-//   return result;
-// }
-
-// export async function keywordQuery(collectionName: string, text: string) {
-//   const collection = client.collections.get(collectionName);
-
-//   const result = await collection.query.nearText(text, {
-//     filters: client.collections
-//       .get(collectionName)
-//       .filter.byProperty("description")
-//       .equal(text),
-//     limit: 2,
-//   });
-
-//   for (const object of result.objects) {
-//     console.log(JSON.stringify(object.properties, null, 2));
-//   }
-//   return result;
-// }

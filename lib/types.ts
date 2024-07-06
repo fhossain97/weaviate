@@ -68,3 +68,22 @@ export const DOG_BREEDS_API = {
     last: "https://dogapi.dog/api/v2/breeds?page[number]=29",
   },
 };
+
+export const formattedAPIDogData = {
+  name: "Caucasian Shepherd Dog",
+  description:
+    "The Caucasian Shepherd Dog is a large and powerful breed of dog from the Caucasus Mountains region. These dogs are large in size, with a thick double coat to protect them from the cold. They have a regal bearing, with a proud and confident demeanor. They are highly intelligent and loyal, making them excellent guard dogs. They are courageous and alert, with an instinct to protect their family and property. They are highly trainable, but require firm and consistent training.",
+  // life_span: {
+  //   max: 20,
+  //   min: 15,
+  // },
+  // male_weight: {
+  //   max: 90,
+  //   min: 50,
+  // },
+  // female_weight: {
+  //   max: 70,
+  //   min: 45,
+  // },
+  hypoallergenic: false,
+};

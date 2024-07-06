@@ -1,25 +1,21 @@
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { z } from "zod";
-import { client, createCollection, hybridSearch, loadData } from "lib/helper";
+import { keywordSearch, loadData } from "lib/helper";
+import { type formattedAPIDogData } from "lib/types";
 
 export const dogRouter = createTRPCRouter({
   searchDogs: publicProcedure
     .input(z.object({ text: z.string() }))
-    .query(async ({ input }) => {
+    .mutation(async ({ input }) => {
       const { text } = input;
-      const response = await client.isReady();
-
-      if (response) {
-        const x = await loadData("dog");
-        console.log(x, "this is x ");
-        // const hybrid = await hybridSearch("dog", text);
-        // console.log("hyrbrid", hybrid);
-        // return hybrid;
-      } else {
-        console.warn(
-          `Weaviate Instance is not connected. Please check credentials and try again.`,
-        );
-        return undefined;
+      try {
+        await loadData("Dog");
+        const result = await keywordSearch("Dog", text);
+        return result as {
+          data: { Get: { Dog: (typeof formattedAPIDogData)[] } };
+        };
+      } catch (e) {
+        throw Error(JSON.stringify(e));
       }
     }),
 });
