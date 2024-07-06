@@ -23,7 +23,7 @@ export default function Results({
   data: (typeof formattedAPIDogData)[] | undefined;
 }) {
   return (
-    <Paper sx={{ width: "100%", overflow: "hidden" }}>
+    <Box sx={{ width: "100%", overflow: "hidden" }}>
       <TableContainer sx={{ maxHeight: 440 }}>
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
@@ -36,13 +36,15 @@ export default function Results({
             </TableRow>
           </TableHead>
           <TableBody>
-            {data ? (
+            {data && data.length > 0 ? (
               data.map((dog, idx) => {
                 return (
                   <TableRow hover role="checkbox" tabIndex={-1} key={idx}>
                     <TableCell align="center">{dog.name}</TableCell>
                     <TableCell align="center">{dog.description}</TableCell>
-                    <TableCell align="center">{dog.hypoallergenic}</TableCell>
+                    <TableCell align="center">
+                      {dog.hypoallergenic.toString()}
+                    </TableCell>
                     {/* <TableCell align="center">
                       Max: {dog.life_span.max}
                       Min: {dog.life_span.min}
@@ -64,6 +66,6 @@ export default function Results({
           </TableBody>
         </Table>
       </TableContainer>
-    </Paper>
+    </Box>
   );
 }

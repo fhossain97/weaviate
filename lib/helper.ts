@@ -65,19 +65,16 @@ export async function createCollection(collectionName: string) {
     },
   };
   await client.schema.classCreator().withClass(classObj).do();
-
-  return;
 }
 
-export async function checkIfCollectionExists(collectionName: string) {
-  const collectionExists = await client.schema.exists(collectionName);
-  if (!collectionExists) {
-    await createCollection(collectionName);
-    return collectionName;
-  } else {
-    return collectionName;
-  }
-}
+// export async function checkIfCollectionExists(collectionName: string) {
+//   const collectionExists = await client.schema.exists(collectionName);
+//   if (!collectionExists) {
+//     await createCollection(collectionName);
+//     return collectionName;
+//   }
+//   return collectionName;
+// }
 
 export async function fetchData(url: string) {
   return (await fetch(String(url), {
@@ -133,7 +130,8 @@ export async function formatData() {
 }
 
 export async function loadData(collectionName: string) {
-  const schemaName = await checkIfCollectionExists(collectionName);
+  // const schemaName = await checkIfCollectionExists(collectionName);
+
   const formattedData = await formatData();
 
   let batcher: ObjectsBatcher = client.batch.objectsBatcher();
@@ -142,7 +140,7 @@ export async function loadData(collectionName: string) {
 
   for (const doc of formattedData) {
     const obj = {
-      class: schemaName,
+      class: collectionName,
       properties: {
         name: doc.name,
         description: doc.description,
@@ -178,7 +176,7 @@ export async function keywordSearch(collectionName: string, text: string) {
     .withBm25({
       query: text,
     })
-    .withLimit(5)
+    .withLimit(2)
     .withFields("name description hypoallergenic")
     .do();
 }

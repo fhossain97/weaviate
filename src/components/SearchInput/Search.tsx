@@ -6,11 +6,7 @@ import Results from "../ResultsTable/Table";
 const Search = () => {
   const [inquiry, setInquiry] = useState<string>("");
 
-  const search = api.dogs.searchDogs.useMutation({
-    onError: (e) => {
-      throw new Error(`Search unsuccessful: ${JSON.stringify(e)}`);
-    },
-  });
+  const search = api.dogs.searchDogs.useMutation();
 
   const handleQuery = (e: FormEvent) => {
     e.preventDefault();
@@ -22,7 +18,7 @@ const Search = () => {
   };
 
   return (
-    <Box className="flex w-full flex-col items-center">
+    <Box className="mb-10 flex w-full flex-col items-center">
       <form onSubmit={handleQuery} className="flex w-full items-center">
         <TextField
           id="standard-basic"

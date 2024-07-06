@@ -15,7 +15,7 @@ export const dogRouter = createTRPCRouter({
           data: { Get: { Dog: (typeof formattedAPIDogData)[] } };
         };
       } catch (e) {
-        throw Error(JSON.stringify(e));
+        console.error("Error in searchDogs", JSON.stringify(e));
       }
     }),
 });
