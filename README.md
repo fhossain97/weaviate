@@ -22,18 +22,7 @@ To run application:
 
 ## Loom Demo Vido
 
-Please note that the recording for the app via the application was causing issues. I recorded the video on [Loom](https://www.loom.com/share/1d70381054a8450f8ccf29c80d6a1381?sid=47be35b2-9c9c-4edd-bc1c-d0d00183378b).
-
-## Environment Variables
-
-This repository requires the following environment variables to be set in a `.env` file:
-
-- WEAVIATE_INSTANCE_URL="https://farhana-sandbox-7lpuhim1.weaviate.network"
-- WEAVIATE_API_KEY="jbHF7aOH6vSOff08IxENCzdgIAp9Cxa1MZum"
-- OPENAI_API_KEY="sk-proj-5aEfK9yFIf43WJ03HB1QT3BlbkFJBrUYCVNYDv0hn6hkCaF9"
-- DOGS_API_URL="https://dogapi.dog/api/v2/breeds"
-
-Note: These are test credentials. Replace them with actual credentials for production use.
+- [Loom](https://www.loom.com/share/1d70381054a8450f8ccf29c80d6a1381?sid=47be35b2-9c9c-4edd-bc1c-d0d00183378b).
 
 ## Additional Findings
 
